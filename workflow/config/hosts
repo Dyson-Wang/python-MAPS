@@ -1,0 +1,11 @@
+[agents]
+172.21.15.162 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.27 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.47 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.220 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.67 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.160 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.143 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.117 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.60 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant
+172.21.15.239 ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=vagrant

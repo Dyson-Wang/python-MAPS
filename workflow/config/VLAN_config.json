@@ -1,0 +1,60 @@
+{
+	"database" : {
+		"ip": "127.0.0.1",
+		"port":8086},
+	"vlan" : {
+		"uname" : "vagrant",
+		"servers" : [
+			{
+				"ip" : "172.21.15.162",
+				"cpu" : 2,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ip" : "172.21.15.27",
+				"cpu" : 2,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ip" : "172.21.15.47",
+				"cpu" : 2,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ip" : "172.21.15.220",
+				"cpu" : 2,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ip" : "172.21.15.67",
+				"cpu" : 2,
+				"powermodel": "PME2asv4"
+			},
+			{
+				"ip" : "172.21.15.160",
+				"cpu" : 2,
+				"powermodel": "PME2asv4"
+			},
+			{
+				"ip" : "172.21.15.143",
+				"cpu" : 4,
+				"powermodel": "PMB4ms"
+			},
+			{
+				"ip" : "172.21.15.117",
+				"cpu" : 4,
+				"powermodel": "PMB4ms"
+			},
+			{
+				"ip" : "172.21.15.60",
+				"cpu" : 4,
+				"powermodel": "PME4asv4"
+			},
+			{
+				"ip" : "172.21.15.239",
+				"cpu" : 4,
+				"powermodel": "PME4asv4"
+			}
+		]
+	}
+}

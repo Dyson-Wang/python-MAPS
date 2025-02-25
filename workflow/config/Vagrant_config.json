@@ -1,0 +1,70 @@
+{
+	"database" : {
+		"ip": "127.0.0.1",
+		"port":8086},
+	"vagrant" : {
+		"box" : "ubuntu/bionic64",
+		"servers" : [
+			{
+				"ram" : 2048,
+				"cpu" : 2,
+				"disk": 60,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ram" : 2048,
+				"cpu" : 2,
+				"disk": 60,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ram" : 2048,
+				"cpu" : 2,
+				"disk": 60,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ram" : 2048,
+				"cpu" : 2,
+				"disk": 60,
+				"powermodel": "PMB2ms"
+			},
+			{
+				"ram" : 2048,
+				"cpu" : 2,
+				"disk": 60,
+				"powermodel": "PME2asv4"
+			},
+			{
+				"ram" : 2048,
+				"cpu" : 2,
+				"disk": 60,
+				"powermodel": "PME2asv4"
+			},
+			{
+				"ram" : 8192,
+				"cpu" : 4,
+				"disk": 60,
+				"powermodel": "PMB4ms"
+			},
+			{
+				"ram" : 8192,
+				"cpu" : 4,
+				"disk": 60,
+				"powermodel": "PMB4ms"
+			},
+			{
+				"ram" : 8192,
+				"cpu" : 4,
+				"disk": 60,
+				"powermodel": "PME4asv4"
+			},
+			{
+				"ram" : 8192,
+				"cpu" : 4,
+				"disk": 60,
+				"powermodel": "PME4asv4"
+			}
+		]
+	}
+}
