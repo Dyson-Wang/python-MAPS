@@ -21,15 +21,19 @@ class Workflow():
 	# Total power in watt
 	# Total Router Bw
 	# Interval Time in seconds
+ 
+	# hostList包括[(IP, IPS, Ram, Disk_, Bw, Power)] 地址、每秒指令数、内存、硬盘、带宽、功耗
+ 
 	def __init__(self, Scheduler, Decider, ContainerLimit, IntervalTime, hostinit, database, env, logger):
+		# 调度器、划分器、容器数、时隙、边缘服务器列表、存储运行数据的数据库、边缘数据中心、日志器
 		self.hostlimit = len(hostinit) # 主机上限10
 		self.scheduler = Scheduler # Scheduler
-		self.scheduler.setEnvironment(self) # Scheduler.env=self
+		self.scheduler.setEnvironment(self) # Scheduler.env=self 大的env
 		self.decider = Decider # Decider
 		self.decider.setEnvironment(self) # Decider.env=self
 		self.containerlimit = ContainerLimit # 容器上限10
-		self.hostlist = [] # 主机列表
-		self.containerlist = [] # 容器列表
+		self.hostlist = [] # 主机列表 本次工作流
+		self.containerlist = [] # 容器列表 本次工作流
 		self.intervaltime = IntervalTime # 时隙大小
 		self.interval = 0 # 默认轮次为0
 		self.db = database # conn
@@ -44,26 +48,26 @@ class Workflow():
 		self.addHostlistInit(hostinit) # hosts详细信息
 		self.globalStartTime = time() # 启动时间
 		self.intervalAllocTimings = [] # ?
-	
+	# 添加host
 	def addHostInit(self, IP, IPS, RAM, Disk, Bw, Powermodel):
-		assert len(self.hostlist) < self.hostlimit
+		assert len(self.hostlist) < self.hostlimit # 存储的host列表
 		# 不执行？
 		host = Node(len(self.hostlist),IP,IPS, RAM, Disk, Bw, Powermodel, self)
 		self.hostlist.append(host)
-
-	def addHostlistInit(self, hostList):
+	# 添加hostlist
+	def addHostlistInit(self, hostList): # hostList 传入的host信息列表
 		assert len(hostList) == self.hostlimit
 		for IP, IPS, RAM, Disk, Bw, Powermodel in hostList:
 			self.addHostInit(IP, IPS, RAM, Disk, Bw, Powermodel)
 
-	# callby addContainerListInit
+	# 单个 addContainerListInit调用
 	def addContainerInit(self, WorkflowID, CreationID, interval, split, dependentOn, SLA, application):
 		
 		container = Task(len(self.containerlist), WorkflowID, CreationID, interval, split, dependentOn, SLA, application, self, HostID = -1)
 		self.containerlist.append(container)
 		return container
 
-	# callby addContainersInit
+	# 列表 addContainersInit调用
 	def addContainerListInit(self, containerInfoList):
 		# 目前最大能部署的容器数
 		maxdeploy = min(len(containerInfoList), self.containerlimit-self.getNumActiveContainers())
@@ -77,6 +81,7 @@ class Workflow():
 		self.containerlist += [None] * (self.containerlimit - len(self.containerlist))
 		return [container.id for container in deployedContainers]
 
+	# 
 	def addContainer(self, WorkflowID, CreationID, interval, split, dependentOn, SLA, application):
 		for i,c in enumerate(self.containerlist):
 			if c == None or not c.active:
@@ -97,30 +102,30 @@ class Workflow():
 				if len(deployedContainers) >= maxdeploy: break
 		return [container.id for container in deployedContainers]
 
-	def getContainersOfHost(self, hostID):
+	def getContainersOfHost(self, hostID): # 查看边缘服务器上有多少个容器。
 		containers = []
 		for container in self.containerlist:
 			if container and container.hostid == hostID:
 				containers.append(container.id)
 		return containers
 
-	def getContainerByID(self, containerID):
+	def getContainerByID(self, containerID): # 按ID访问容器
 		return self.containerlist[containerID]
 
-	def getContainerByCID(self, creationID):
+	def getContainerByCID(self, creationID): # 按创建ID访问容器
 		for c in self.containerlist + self.inactiveContainers:
 			if c and c.creationID == creationID:
 				return c
 
-	def getInactiveContainerByCID(self, creationID):
+	def getInactiveContainerByCID(self, creationID): # 按创建ID访问容器
 		for c in self.inactiveContainers:
 			if c and c.creationID == creationID:
 				return c
 
-	def getHostByID(self, hostID):
+	def getHostByID(self, hostID): # 按ID访问边缘
 		return self.hostlist[hostID]
 
-	def getCreationIDs(self, migrations, containerIDs):
+	def getCreationIDs(self, migrations, containerIDs): # 如果迁移之前已经创建了，则传给它创建ID
 		creationIDs = []
 		for decision in migrations:
 			if decision[0] in containerIDs: creationIDs.append(self.containerlist[decision[0]].creationID)
@@ -138,7 +143,7 @@ class Workflow():
 				self.activeworkflows[WorkflowID]['ccids'].append(CreationID)
 		print(color.YELLOW); pprint(self.activeworkflows); print(color.ENDC)
 
-	def getPlacementPossible(self, containerID, hostID): # host部署可能性
+	def getPlacementPossible(self, containerID, hostID): # 容器能否在边缘侧部署
 		container = self.containerlist[containerID]
 		host = self.hostlist[hostID]
 		ipsreq = container.getBaseIPS()
@@ -151,7 +156,7 @@ class Workflow():
 				ramsizereq <= ramsizeav and \
 				disksizereq <= disksizeav)
 
-	def addContainersInit(self, containerInfoListInit):
+	def addContainersInit(self, containerInfoListInit): 
 		self.interval += 1
 		deployed = self.addContainerListInit(containerInfoListInit)
 		return deployed

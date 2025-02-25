@@ -28,23 +28,23 @@ class Datacenter():
     
     def __init__(self, hosts, env, env_type):
         self.num_hosts = len(hosts) # host数量
-        self.hosts = hosts # hostArray
+        self.hosts = hosts # hostArray IP数组
         self.env = env # "VLAN"
         self.env_type = env_type # "Virtual"
         self.types = {'Power' : [1]} # dict
 
     # 调用测试性能程序
     def parallelizedFunc(self, IP):
-        payload = {"opcode": "hostDetails"+self.env_type}
+        payload = {"opcode": "hostDetails"+self.env_type} # opcode: hostDetailsVirtual
         resp = requests.get("http://"+IP+":8081/request", data=json.dumps(payload))
         data = json.loads(resp.text)
         return data
 
-    # 生成hosts的硬件信息
+    # 生成hosts的硬件信息，对每个边缘服务器IP连接执行命令测试性能。
     def generateHosts(self):
         print(color.HEADER+"Obtaining host information and generating hosts"+color.ENDC)
         hosts = []
-        # 读取powermodels
+        # 读取powermodels workflow/config/VLAN_config.json
         with open('workflow/config/'+self.env+'_config.json', "r") as f:
             config = json.load(f)
         powermodels = [server["powermodel"] for server in config[self.env.lower()]['servers']]
