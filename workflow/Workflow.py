@@ -33,7 +33,7 @@ class Workflow():
 		self.decider.setEnvironment(self) # Decider.env=self
 		self.containerlimit = ContainerLimit # 容器上限10
 		self.hostlist = [] # 主机列表 本次工作流
-		self.containerlist = [] # 容器列表 本次工作流
+		self.containerlist = [] # 容器列表 可部署待调度容器列表
 		self.intervaltime = IntervalTime # 时隙大小
 		self.interval = 0 # 默认轮次为0
 		self.db = database # conn
@@ -62,7 +62,8 @@ class Workflow():
 
 	# 单个 addContainerListInit调用
 	def addContainerInit(self, WorkflowID, CreationID, interval, split, dependentOn, SLA, application):
-		
+		# 							1 TODO 错了?
+		# container = Task(len(self.containerlist), WorkflowID, CreationID, interval, split, dependentOn, SLA, application, self, HostID = -1)
 		container = Task(len(self.containerlist), WorkflowID, CreationID, interval, split, dependentOn, SLA, application, self, HostID = -1)
 		self.containerlist.append(container)
 		return container
@@ -77,7 +78,8 @@ class Workflow():
 				dep = self.addContainerInit(WorkflowID, CreationID, interval, split, dependentOn, SLA, application)
 				deployedContainers.append(dep)
 				if len(deployedContainers) >= maxdeploy: break # 按顺序部署
-		# 初始化十个none 最多部署十个
+		# 初始化十个none 最多部署十个 
+		# 确保containerlist始终是十个
 		self.containerlist += [None] * (self.containerlimit - len(self.containerlist))
 		# 只返回容器id 不返回元组
 		return [container.id for container in deployedContainers]
@@ -90,7 +92,8 @@ class Workflow():
 				self.containerlist[i] = container
 				return container
 
-	def addContainerList(self, containerInfoList): # 添加真正可部署容器位置返回新可调度容器列表，之后调度
+	# 添加真正可部署容器位置返回新可调度容器列表，之后调度
+	def addContainerList(self, containerInfoList): 
 		# 还剩几个可部署容器位置
 		maxdeploy = min(len(containerInfoList), self.containerlimit-self.getNumActiveContainers())
 		if maxdeploy == 0: return []
@@ -105,12 +108,12 @@ class Workflow():
 
 	def getContainersOfHost(self, hostID): # 查看边缘服务器上有多少个容器。
 		containers = []
-		for container in self.containerlist:
+		for container in self.containerlist: # 从活动的容器中查找数量
 			if container and container.hostid == hostID:
 				containers.append(container.id)
 		return containers
 
-	def getContainerByID(self, containerID): # 按ID访问容器
+	def getContainerByID(self, containerID): # 按ID访问可部署待调度容器
 		return self.containerlist[containerID]
 
 	def getContainerByCID(self, creationID): # 按创建ID访问容器
@@ -126,9 +129,9 @@ class Workflow():
 	def getHostByID(self, hostID): # 按ID访问边缘
 		return self.hostlist[hostID]
 
-	def getCreationIDs(self, migrations, containerIDs): # 如果迁移之前已经创建了，则传给它创建ID
+	def getCreationIDs(self, migrations, containerIDs): # 根据实际分配的容器去查理论分配的containerIDs
 		creationIDs = []
-		for decision in migrations:
+		for decision in migrations: # 0-n
 			if decision[0] in containerIDs: creationIDs.append(self.containerlist[decision[0]].creationID)
 		return creationIDs
 
@@ -145,6 +148,7 @@ class Workflow():
 				self.activeworkflows[WorkflowID]['ccids'].append(CreationID)
 		print(color.YELLOW); pprint(self.activeworkflows); print(color.ENDC)
 
+	# 此处containerID=ID
 	def getPlacementPossible(self, containerID, hostID): # 容器能否在边缘侧部署
 		container = self.containerlist[containerID]
 		host = self.hostlist[hostID]
@@ -174,6 +178,7 @@ class Workflow():
 				migrations.append((cid, hid))
 				container.allocateAndExecute(hid)
 				ram_usage, _, _ = container.getRAM()
+				# 将父工作流改为本时隙
 				if self.activeworkflows[container.workflowID]['startAt'] == -1:
 					self.activeworkflows[container.workflowID]['startAt'] = self.interval
 				# Update RAM usages for getPlacementPossible()
@@ -186,10 +191,10 @@ class Workflow():
 		self.logger.debug('Interval allocation time for interval '+str(self.interval)+' is '+str(self.intervalAllocTimings[-1]))
 		# 分配到主机所花费的时间
 		print('Interval allocation time for interval '+str(self.interval)+' is '+str(self.intervalAllocTimings[-1]))
-		# 睡眠时间
+		# 睡眠时间 关键
 		self.visualSleep(self.intervaltime - self.intervalAllocTimings[-1])
 		for host in self.hostlist:
-			host.updateUtilizationMetrics()
+			host.updateUtilizationMetrics() # 数据并没有返回
 		return migrations
 
 	def checkWorkflowOutput(self, WorkflowID):
@@ -234,6 +239,7 @@ class Workflow():
 		container = self.getInactiveContainerByCID(cid)
 		container.destroy()
 
+	# 加入到destroyedccids和inactiveContainers调用删除函数
 	def destroyCompletedContainers(self):
 		destroyed, toDestroy = [], []
 		for i, container in enumerate(self.containerlist):
@@ -263,7 +269,8 @@ class Workflow():
 		print(selectable)
 		return selectable
 
-	def addContainers(self, newContainerList): # 删除已经完成的容器，添加可新部署的容器
+	def addContainers(self, newContainerList): 
+		# 删除已经完成的容器，添加可新部署的容器
 		self.interval += 1
 		destroyed = self.destroyCompletedContainers()
 		deployed = self.addContainerList(newContainerList)
@@ -295,7 +302,7 @@ class Workflow():
 			sleep(1)
 		sleep(t % 1)
 		print()
-
+	# 第二次及以后
 	def simulationStep(self, decision): # 
 		start = time()
 		migrations = []
@@ -323,6 +330,7 @@ class Workflow():
 		self.logger.debug("Decision: "+str(decision))
 		self.logger.debug('Interval allocation time for interval '+str(self.interval)+' is '+str(self.intervalAllocTimings[-1]))
 		print('Interval allocation time for interval '+str(self.interval)+' is '+str(self.intervalAllocTimings[-1]))
+		# 开始睡眠!
 		self.visualSleep(max(0, self.intervaltime - self.intervalAllocTimings[-1]))
 		for host in self.hostlist:
 			host.updateUtilizationMetrics()

@@ -95,7 +95,7 @@ class Node():
 		size, read, write = self.getCurrentDisk()
 		return self.diskCap.size - size, self.diskCap.read - read, self.diskCap.write - write
 
-	def updateUtilizationMetrics(self): # 更新利用率指标
+	def updateUtilizationMetrics(self): # 部署成功以后更新利用率指标
 		container_data, _ = self.env.controller.getContainerStat(self.ip)
 		for container_d in container_data:
 			ccid = int(container_d['fields']['name'].split("_")[2])

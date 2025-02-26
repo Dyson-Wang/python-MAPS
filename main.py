@@ -103,7 +103,7 @@ def initalizeEnvironment(environment, logger): # environment为环境字符串�
 
 	# 得到可以直接部署的容器 没有依赖或者依赖已完成
 	deployed = env.addContainersInit(newcontainerinfos) # Deploy new containers and get container IDs
-	
+	# deployed没用
 	start = time()
 	decision = scheduler.placement(deployed) # Decide placement using container ids
 	schedulingTime = time() - start
@@ -112,6 +112,8 @@ def initalizeEnvironment(environment, logger): # environment为环境字符串�
 
 	# decision ※ waiting timer
 	migrations = env.allocateInit(decision) # Schedule containers
+	# 分配执行
+
 	workload.updateDeployedContainers(env.getCreationIDs(migrations, deployed)) # Update workload allocated using creation IDs
 	
 	# 已经真实调度部署的容器creation id
@@ -120,11 +122,14 @@ def initalizeEnvironment(environment, logger): # environment为环境字符串�
 	print("Containers in host:", env.getContainersInHosts())
 	# 已经真实调度的容器部署情况
 	print("Schedule:", env.getActiveContainerList())
+	# 打印未成功部署的容器
 	printDecisionAndMigrations(decision, migrations)
 
 	# Initialize stats
 	stats = Stats(env, workload, datacenter, scheduler)
+	# saveStats(self, deployed, migrations, destroyed, selectedcontainers, decision, schedulingtime)
 	stats.saveStats(deployed, migrations, [], deployed, decision, schedulingTime)
+	# 返回集群对象 负载 调度器 决策器 环境 状态
 	return datacenter, workload, scheduler, decider, env, stats
 
 def stepSimulation(workload, scheduler, decider, env, stats):
@@ -133,10 +138,11 @@ def stepSimulation(workload, scheduler, decider, env, stats):
 	newworkflowinfos = workload.generateNewWorkflows(env.interval)
 	# 根据MAB模型生成decision, layer or semantic
 	workflowsplits = decider.decision(newworkflowinfos)
-	# 返回目前已有的未部署的容器
+	# 返回目前已有的未部署且完成的容器
 	newcontainerinfos = workload.generateNewContainers(env.interval, newworkflowinfos, workflowsplits) # New containers info
 	# 打印新容器 格式：(WorkflowID, CreationID, interval, split, dependentOn, SLA, application)
 	if opts.env != '': print(newcontainerinfos)
+	# [(0, 0, 0, 0, None, 19, 'shreshthtuli/cifar100_layer'),(0, 1, 0, 1, 0, 19, 'shreshthtuli/cifar100_layer'),...]
 
 	# 加入未激活工作流详细信息
 	env.addWorkflows(newcontainerinfos)
@@ -156,14 +162,23 @@ def stepSimulation(workload, scheduler, decider, env, stats):
 	print("Decision:", color.BLUE+str(decision)+color.ENDC)
 	# 开始模拟
 	migrations = env.simulationStep(decision) # Schedule containers ※
+	# 更新已部署的容器
 	workload.updateDeployedContainers(env.getCreationIDs(migrations, deployed)) # Update workload deployed using creation IDs
-	# pr
+	
+	# Deployed ccid
 	print("Deployed containers' creation IDs:", env.getCreationIDs(migrations, deployed))
+	
+	# 本次已部署的 of 总未部署的 [工作流id]
 	print("Deployed:", len(env.getCreationIDs(migrations, deployed)), "of", len(newcontainerinfos), [i[0] for i in newcontainerinfos])
+	# 打印以摧毁的容器数
 	print("Destroyed:", len(destroyed), "of", env.getNumActiveContainers())
+	# 10台主机哪台上有部署
 	print("Containers in host:", env.getContainersInHosts())
+	# 打印正在运行的容器
 	print("Num active containers:", env.getNumActiveContainers())
+	# 10个容器位哪些部署了,index为容器id不是cid
 	print("Host allocation:", [(c.getHostID() if c else -1)for c in env.containerlist])
+	# 打印哪些成功了哪些失败了
 	printDecisionAndMigrations(decision, migrations)
 
 	stats.saveStats(deployed, migrations, destroyed, selected, decision, schedulingTime)
@@ -247,8 +262,10 @@ if __name__ == '__main__':
 	for step in range(NUM_SIM_STEPS):
 		print(color.BOLD+"Simulation Interval:", step, color.ENDC)
 		stepSimulation(workload, scheduler, decider, env, stats)
+		# 10步保存一次状态
 		if env != '' and step % 10 == 0: saveStats(stats, datacenter, workload, env, end = False)
 
+	# 销毁环境
 	if opts.env != '':
 		# Destroy environment if required
 		eval('destroy'+opts.env+'Environment(configFile, mode)')
@@ -257,5 +274,6 @@ if __name__ == '__main__':
 		if 'Windows' in platform.system():
 			os.system('taskkill /f /im influxd.exe')
 
+	# 保存状态
 	saveStats(stats, datacenter, workload, env)
 

@@ -32,7 +32,7 @@ class Task():
 		self.lastWriteBytes = 0
 		self.totalExecTime = 0
 		self.totalMigrationTime = 0
-		self.active = True
+		self.active = True # false未未到时间或者已完成
 		self.destroyAt = -1
 		self.execError = ""
 		self.containerDBInsert()
@@ -140,7 +140,7 @@ class Task():
 		self.disk.size = float(data['disk'][:-1]) if data['disk'][-1] == 'M' else 1024 * float(data['disk'][:-1])
 		self.bw.downlink = data['bw_down']
 		self.bw.uplink = data['bw_up']
-		self.active = data['running']
+		self.active = data['running'] # TODO Active?
 		if not self.active:
 			finished_at = parser.parse(data['finished_at']).replace(tzinfo=None)
 			now = datetime.utcnow()

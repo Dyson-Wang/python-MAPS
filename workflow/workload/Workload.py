@@ -14,6 +14,7 @@ class Workload():
 				undeployed.append(self.createdContainers[i])
 		return undeployed
 
+	# 更新已部署的容器(不会迁移)
 	def updateDeployedContainers(self, creationIDs):
 		for cid in creationIDs:
 			assert not self.deployedContainers[cid]

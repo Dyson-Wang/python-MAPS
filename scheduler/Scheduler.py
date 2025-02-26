@@ -21,7 +21,8 @@ class Scheduler():
     def filter_placement(self, decision):
         filtered_decision = []
         for cid, hid in decision:
-            if self.env.getContainerByID(cid).getHostID() != hid: # 未部署
+            if self.env.getContainerByID(cid).getHostID() != hid: 
+                # 未部署在同一台机器
                 filtered_decision.append((cid, hid))
         return filtered_decision
 
