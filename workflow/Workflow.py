@@ -166,7 +166,7 @@ class Workflow():
 		migrations = []
 		for (cid, hid) in decision:
 			container = self.getContainerByID(cid)
-			assert container.getHostID() == -1 and hid != -1
+			assert container.getHostID() == -1 and hid != -1 #容器未分配并且需要分配的机器
 			if self.getPlacementPossible(cid, hid): # 查看部署可能
 				migrations.append((cid, hid))
 				container.allocateAndExecute(hid)
