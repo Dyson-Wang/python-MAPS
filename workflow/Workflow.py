@@ -31,16 +31,23 @@ class Workflow():
 		self.scheduler.setEnvironment(self) # Scheduler.env=self 大的env
 		self.decider = Decider # Decider
 		self.decider.setEnvironment(self) # Decider.env=self
+
 		self.containerlimit = ContainerLimit # 容器上限10
 		self.hostlist = [] # 主机列表 本次工作流
+
+		# 关键
 		self.containerlist = [] # 容器列表 可部署待调度容器列表
+
 		self.intervaltime = IntervalTime # 时隙大小
 		self.interval = 0 # 默认轮次为0
 		self.db = database # conn
+
 		self.inactiveContainers = [] # 非活跃容器
 		self.destroyedccids = set() # 已经删除的容器
+
 		self.activeworkflows = {} # 激活的工作流
 		self.destroyedworkflows = {} # 完成的工作流
+		
 		self.logger = logger # logger
 		self.stats = None # 
 		self.environment = env # VLAN
