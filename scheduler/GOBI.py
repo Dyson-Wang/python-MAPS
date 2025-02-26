@@ -10,10 +10,11 @@ class GOBIScheduler(Scheduler):
 		self.model = eval(data_type+"()") # train.py - energy_latency_10()
 		# 拿到模型 加载scheduler/BaGTI/checkpoints/energy_latency_10_Trained.ckpt 之后的模型
 		# model.load_state_dict(checkpoint['model_state_dict'])
-		self.model, _, _, _ = load_model(data_type, self.model, data_type)
+		self.model, _, _, _ = load_model(data_type, self.model, data_type) # 只用了模型新/旧
 		self.data_type = data_type
-		self.hosts = int(data_type.split('_')[-1]) # 主机数
-		dtl = data_type.split('_')
+		self.hosts = int(data_type.split('_')[-1]) # 主机数 10
+		dtl = data_type.split('_') # [energy, latency, 10]
+  
 		# src/utils.py - load_energy_latency_data()
 		# self.max_container_ips = 4244.198878
 		_, _, self.max_container_ips = eval("load_"+'_'.join(dtl[:-1])+"_data("+dtl[-1]+")")

@@ -45,10 +45,10 @@ class energy_latency_50(nn.Module):
             x = Coeff_Energy*x[0] + Coeff_Latency*x[1]
         return x
 
-class energy_latency_10(nn.Module):
+class energy_latency_10(nn.Module): # 能量延迟调度模型
     def __init__(self):
         super(energy_latency_10, self).__init__()
-        self.name = "energy_latency_10"
+        self.name = "energy_latency_10" # find链式模型
         self.find = nn.Sequential(
             nn.Linear(10 * 12, 128),
             nn.Softplus(),

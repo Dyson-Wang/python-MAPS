@@ -80,7 +80,7 @@ class MABDecider(SplitDecision):
 					self.high_rewards[decision] = self.high_rewards[decision] + (reward - self.high_rewards[decision]) / self.high_counts[decision]
 		return sum(rewards)/(len(rewards)+1e-5)
 
-	def decision(self, workflowlist):
+	def decision(self, workflowlist): # 根据需要决策的工作流进行决策
 		# epsilon-greedy策略
 		self.updateAverages()
 		avg_reward = self.updateRewards()

@@ -49,10 +49,11 @@ def save_model(model, optimizer, epoch, accuracy_list):
         'optimizer_state_dict': optimizer.state_dict(),
         'accuracy_list': accuracy_list}, file_path)
 
-# GOBI load model 
+# 关键代码
+# scheduler load model  # load_model(energy_latency_10, model, energy_latency_10)
 def load_model(filename, model, data_type): # energy_latency_10, model(energy_latency_10), energy_latency_10
 	optimizer = torch.optim.Adam(model.parameters() , lr=0.0001, weight_decay=1e-5) if 'stochastic' not in data_type else torch.optim.AdamW(model.parameters() , lr=0.0001)
-	file_path1 = MODEL_SAVE_PATH + "/" + filename + "_Trained.ckpt"
+	file_path1 = MODEL_SAVE_PATH + "/" + filename + "_Trained.ckpt" # checkpoints/energy_latency_10_Trained.ckpt
 	file_path2 = 'scheduler/BaGTI/' + file_path1 # scheduler/BaGTI/checkpoints/energy_latency_10_Trained.ckpt
 	file_path = file_path1 if os.path.exists(file_path1) else file_path2
 	if os.path.exists(file_path):
