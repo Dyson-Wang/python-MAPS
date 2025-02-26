@@ -38,23 +38,26 @@ def setupVLANEnvironment(cfg, mode):
         config = json.load(f)
     HOST_IPS = [server['ip'] for server in config['vlan']['servers']]
     # VLAN_config.json - ip
-    if mode in [0, 1]:
+    if mode in [0, 1]: # 0 (Create and destroy), 1 (Create), 2 (No op), 3 (Destroy)
         MAIN_DIR = os.getcwd().replace('\\', '/').replace('C:', '/mnt/c')
         password = getpass(color.BOLD+'Please enter linux password:'+color.ENDC)
         run_cmd_pwd("rm /etc/ansible/hosts", password)
+        # 将连接密钥粘贴到用户目录下
         run_cmd_pwd("cp workflow/install_scripts/ssh_keys/id_rsa ~/id_rsa", password)
         run_cmd_pwd("cp workflow/install_scripts/ssh_keys/id_rsa.pub ~/id_rsa.pub", password)
         with open("workflow/config/hosts", "w") as f:
             f.write("[agents]\n")
             for ip in HOST_IPS:
                 f.write(ip+" ansible_ssh_private_key_file=~/id_rsa ansible_ssh_user=ansible\n")
+                # ansible是0和1模式创建的
         run_cmd_pwd("cp workflow/config/hosts /etc/ansible/hosts", password)
         run_cmd_pwd("cp workflow/config/ansible.cfg /etc/ansible/ansible.cfg", password)
-        run_cmd("ansible-playbook workflow/config/VLAN_ansible.yml")
+        run_cmd("ansible-playbook workflow/config/VLAN_ansible.yml") # TODO 需要改
     # 用户名
     uname = "vagrant"
     for ip in HOST_IPS:
         # 执行删除脚本、重启docker、删除container_data目录下数据
+        # 运行delete.sh 重启docker 删除container_data数据
         res = os.system("ssh -o StrictHostKeyChecking=no -i workflow/install_scripts/ssh_keys/id_rsa "+uname+"@"+ip+" /home/vagrant/agent/scripts/delete.sh > /dev/null 2>&1")  
         res = os.system("ssh -o StrictHostKeyChecking=no -i workflow/install_scripts/ssh_keys/id_rsa "+uname+"@"+ip+" sudo service docker restart > /dev/null 2>&1")  
         res = os.system("ssh -o StrictHostKeyChecking=no -i workflow/install_scripts/ssh_keys/id_rsa "+uname+"@"+ip+" sudo rm -rf /home/vagrant/container_data/* > /dev/null 2>&1")  

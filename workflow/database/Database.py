@@ -6,8 +6,8 @@ class Database():
         self.host = influxdb_host
         self.port = influxdb_port
         self.conn = InfluxDBClient(host=self.host, port=self.port) # 初始化连接
-        self.conn.drop_database(self.db_name) # 删除旧数据库
-        self.db = self.create(self.conn,self.db_name)
+        self.conn.drop_database(self.db_name) # 删除旧数据库 确保新数据库可以创建
+        self.db = self.create(self.conn,self.db_name) # 全新的数据库连接
 
     def create(self,conn,db_name):
        #Create a database
@@ -15,7 +15,7 @@ class Database():
        conn.switch_database(db_name) # 切换数据库
        return conn
 
-    def insert(self,json_body):
+    def insert(self,json_body): # 插入json
         # Insert data in to database
         self.db.write_points(json_body)
    

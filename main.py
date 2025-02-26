@@ -67,7 +67,7 @@ logFile = 'SplitPlace.log'
 if len(sys.argv) > 1:
 	with open(logFile, 'w'): os.utime(logFile, None)
 
-def initalizeEnvironment(environment, logger):
+def initalizeEnvironment(environment, logger): # environment为环境字符串、logger日志记录器
 	# Initialize the db 初始化数据库对象
 	db = Database(DB_NAME, DB_HOST, DB_PORT) # 返回的conn，数据库连接对象
 
@@ -75,24 +75,24 @@ def initalizeEnvironment(environment, logger):
 	''' Can be Datacenter '''
 	datacenter = Datacenter(HOSTS_IP, environment, 'Virtual')
 
-	# Initialize workload 初始化工作负载
+	# Initialize workload 初始化工作负载 创建新工作流
 	''' Can be SPW '''
 	workload = SPW(NEW_CONTAINERS, 0.5, db)
 
 	# Initialize splitnet decision moduele 初始化分割决策
 	''' Can be Random, SemanticOnly, LayerOnly '''
-	decider = MABDecider()
+	decider = MABDecider() # TODO MAP decider 
 	
 	# Initialize scheduler 初始化调度器
 	''' Can be LRMMTR, RF, RL, RM, Random, RLRMMTR, TMCR, TMMR, TMMTR, GA, GOBI (arg = 'energy_latency_'+str(HOSTS)) '''
-	scheduler = GOBIScheduler('energy_latency_'+str(HOSTS))
+	scheduler = GOBIScheduler('energy_latency_'+str(HOSTS)) # energy_latency_10
 	# scheduler = RandomScheduler()
 
 	# Initialize Environment
-	hostlist = datacenter.generateHosts()
+	hostlist = datacenter.generateHosts() # 生成每个host的详细信息及对象
 	env = Workflow(scheduler, decider, CONTAINERS, INTERVAL_TIME, hostlist, db, environment, logger)
 
-	# Execute first step
+	# ------Execute first step------
 	# 生成一个新的工作流。包含WorkflowID,interval,sla,workflow
 	newworkflowinfos = workload.generateNewWorkflows(env.interval)
 	# 根据MAB模型生成decision, layer or semantic
@@ -101,7 +101,7 @@ def initalizeEnvironment(environment, logger):
 	newcontainerinfos = workload.generateNewContainers(env.interval, newworkflowinfos, workflowsplits) # New containers info
 	env.addWorkflows(newcontainerinfos) # 添加未激活的工作流
 
-	# 得到可以直接部署的容器
+	# 得到可以直接部署的容器 没有依赖或者依赖已完成
 	deployed = env.addContainersInit(newcontainerinfos) # Deploy new containers and get container IDs
 	
 	start = time()
@@ -203,10 +203,11 @@ def saveStats(stats, datacenter, workload, env, end=True):
 	    pickle.dump(stats, handle)
 
 if __name__ == '__main__':
+    # 格式化选项
 	env, mode = opts.env, int(opts.mode)
 
 	if env != '':
-		# 将所有agent文件转换为 unix 格式
+		# 将所有agent文件转换为 unix 格式 agent文件夹是边缘服务器的命令
 		unixify(['workflow/agent/', 'workflow/agent/scripts/'])
 
 		# Start InfluxDB service
@@ -214,7 +215,7 @@ if __name__ == '__main__':
 		if 'Windows' in platform.system():
 			os.startfile('C:/Program Files/InfluxDB/influxdb-1.8.3-1/influxd.exe')
 
-		# workflow/config/VLAN_config.json
+		# workflow/config/VLAN_config.json env配置文件
 		configFile = 'workflow/config/' + opts.env + '_config.json'
 	    
 		logger.basicConfig(filename=logFile, level=logger.DEBUG,
@@ -223,6 +224,8 @@ if __name__ == '__main__':
 		cfg = {}
 		with open(configFile, "r") as f:
 			cfg = json.load(f)
+   
+		# 此处定义主代理数据库接口
 		DB_HOST = cfg['database']['ip']
 		DB_PORT = cfg['database']['port']
 		DB_NAME = 'COSCO'
@@ -233,7 +236,7 @@ if __name__ == '__main__':
 			print(HOSTS_IP)
 		elif env == 'VLAN':
 			print("Setting up VLAN environment using Ansible")
-			HOSTS_IP = setupVLANEnvironment(configFile, mode)
+			HOSTS_IP = setupVLANEnvironment(configFile, mode) # 这里创建主机ID
 			print(HOSTS_IP)
 		# exit()
 

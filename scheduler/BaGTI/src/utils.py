@@ -54,13 +54,17 @@ def load_energy_data():
 		# Normalization by (x - min)/(max - min)
 	return dataset, len(dataset)
 
+# 关键代码
 def load_energy_latency_data(HOSTS):
 	# 'datasets/energy_latency_10_scheduling.csv'
 	dataset_path = 'datasets/energy_latency_'+str(HOSTS)+'_scheduling.csv'
 	data = pd.read_csv(dataset_path) if os.path.exists(dataset_path) else pd.read_csv('scheduler/BaGTI/'+dataset_path)
 	# ?
 	data = data.values.astype(np.float)
+ 
+	# 关键指标 ips最大的容器
 	max_ips_container = max(data.max(0)[HOSTS:2*HOSTS]) # 返回一个包含每列最大值的张量 4244.198878
+ 
 	dataset = []
 	# 
 	print("Dataset size", data.shape[0]) # 235

@@ -23,7 +23,7 @@ class Workflow():
 	# Interval Time in seconds
  
 	# hostList包括[(IP, IPS, Ram, Disk_, Bw, Power)] 地址、每秒指令数、内存、硬盘、带宽、功耗
- 
+	# env = Workflow(scheduler, decider, CONTAINERS, INTERVAL_TIME, hostlist, db, environment, logger)
 	def __init__(self, Scheduler, Decider, ContainerLimit, IntervalTime, hostinit, database, env, logger):
 		# 调度器、划分器、容器数、时隙、边缘服务器列表、存储运行数据的数据库、边缘数据中心、日志器
 		self.hostlimit = len(hostinit) # 主机上限10
@@ -77,8 +77,9 @@ class Workflow():
 				dep = self.addContainerInit(WorkflowID, CreationID, interval, split, dependentOn, SLA, application)
 				deployedContainers.append(dep)
 				if len(deployedContainers) >= maxdeploy: break # 按顺序部署
-		# 初始化十个none
+		# 初始化十个none 最多部署十个
 		self.containerlist += [None] * (self.containerlimit - len(self.containerlist))
+		# 只返回容器id 不返回元组
 		return [container.id for container in deployedContainers]
 
 	# 
@@ -132,14 +133,15 @@ class Workflow():
 		return creationIDs
 
 	def addWorkflows(self, containerInfoList): # 加入未激活工作流详细信息
+		# (WorkflowID, CreationID, interval, split, dependentOn, SLA, application)
 		for WorkflowID, CreationID, interval, _, _, SLA, application in containerInfoList:
-			if WorkflowID not in self.activeworkflows:# 未激活的工作流
+			if WorkflowID not in self.activeworkflows:# 未激活的工作流就创建工作流
 				self.activeworkflows[WorkflowID] = {'ccids': [CreationID], \
 					'createAt': interval, \
 					'sla': SLA, \
 					'startAt': -1, \
 					'application': application}
-			elif CreationID not in self.activeworkflows[WorkflowID]['ccids']:
+			elif CreationID not in self.activeworkflows[WorkflowID]['ccids']:# 加入已激活的工作流中
 				self.activeworkflows[WorkflowID]['ccids'].append(CreationID)
 		print(color.YELLOW); pprint(self.activeworkflows); print(color.ENDC)
 
@@ -156,6 +158,7 @@ class Workflow():
 				ramsizereq <= ramsizeav and \
 				disksizereq <= disksizeav)
 
+	# 得到可以直接部署的容器
 	def addContainersInit(self, containerInfoListInit): 
 		self.interval += 1
 		deployed = self.addContainerListInit(containerInfoListInit)

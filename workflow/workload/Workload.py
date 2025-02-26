@@ -5,7 +5,7 @@ class Workload():
 		self.workflow_id = 0
 		self.creation_id = 0
 		self.createdContainers = [] # 已创建容器
-		self.deployedContainers = [] # 已部署容器
+		self.deployedContainers = [] # 已部署容器 true为已部署 false为未部署
 
 	def getUndeployedContainers(self):
 		undeployed = []
