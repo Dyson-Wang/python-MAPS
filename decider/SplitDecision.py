@@ -8,7 +8,7 @@ import numpy as np
 class SplitDecision():
     def __init__(self):
         self.env = None
-        self.choices = ['layer', 'semantic'] # TODO 改为每层
+        self.choices = ['layer', 'layer'] # TODO 改为每层
 
     # 添加env属性
     def setEnvironment(self, env):

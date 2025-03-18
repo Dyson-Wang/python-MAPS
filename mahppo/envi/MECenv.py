@@ -6,7 +6,8 @@ from .user import UserEquipment
 
 normalize_factor = {'vgg11': (0.092876, 1204224),
                     'resnet18': (0.045887, 1204224),
-                    'mobilenetv2': (0.052676, 1204224)}
+                    'mobilenetv2': (0.052676, 1204224),
+                    'resnet152': (0.379408, 1204224)}
 
 
 class MECsystem(object):

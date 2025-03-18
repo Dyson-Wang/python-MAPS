@@ -32,7 +32,7 @@ class UserEquipment: # 每个ue参数
             self.channel = 0
             self.power = 1e-10
         else: # 划分点 信道 功率
-            self.point = np.random.choice(np.arange(6)) #[0,6)
+            self.point = np.random.choice(np.arange(52)) #[0,6)
             self.channel = np.random.choice(np.arange(self.num_channels))
             self.power = np.random.random() * (self.pmax - 1e-10) + 1e-10
         self.next_point = self.point

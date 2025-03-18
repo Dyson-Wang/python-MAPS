@@ -9,8 +9,14 @@ def train(args, agent, env, test_env, save_dir, logger, start_episode=0, start_s
     global_episode = start_episode
     global_step = start_step
     max_episode_step = int((args.possion_lambda * 0.15) / args.slot_time)
+
+    for actor in agent.actors:
+        actor.hidden = actor.init_hidden()
+
     while True:
         s_t = env.reset()
+        agent.state_history.clear()  # Reset state history
+        
         for j in range(max_episode_step):
             actions = agent.select_action(s_t)
             s_t1, r_t, done, _ = env.step(actions)
@@ -23,7 +29,7 @@ def train(args, agent, env, test_env, save_dir, logger, start_episode=0, start_s
             s_t = s_t1
 
             if global_step % args.step == 0:
-                agent.update() # 定期更新actor模型参数
+                agent.update()  # Regular model update
                 test(args, global_episode, global_step, test_env, agent, logger)
 
             if done:
@@ -31,10 +37,10 @@ def train(args, agent, env, test_env, save_dir, logger, start_episode=0, start_s
                 break
 
         if global_step > args.max_global_step:
-            # test(args, global_episode, global_step, test_env, agent, logger)
             break
 
     agent.save_model(save_dir + 'ckp.pt', args)
+
 
 
 def test(args, episode, step, test_env, agent, logger=None):
@@ -65,10 +71,10 @@ def init_parser():
     parser.add_argument('--exp_name', type=str, default='default_DRL')
 
     # system
-    parser.add_argument('--net', default='resnet18', type=str)
+    parser.add_argument('--net', default='resnet152', type=str)
     parser.add_argument('--possion_lambda', default=200, type=int)
     parser.add_argument('--num_channels', default=2, type=int)
-    parser.add_argument('--num_users', default=5, type=int)
+    parser.add_argument('--num_users', default=4, type=int)
     parser.add_argument('--num_user_state', default=4, type=int)
     parser.add_argument('--pmax', default=1, type=float, help='max power')
     parser.add_argument('--dmax', default=100, type=float, help='max distance')
@@ -84,7 +90,7 @@ def init_parser():
     parser.add_argument('--lr_a', default=0.0001, type=float, help='actor net learning rate')
     parser.add_argument('--lr_c', default=0.0001, type=float, help='critic net learning rate')
 
-    parser.add_argument('--max_global_step', type=int, default=500000)
+    parser.add_argument('--max_global_step', type=int, default=10000)
     parser.add_argument('--gamma', type=float, default=0.95)
     parser.add_argument('--slot_time', default=0.5, type=float)
 
@@ -94,6 +100,9 @@ def init_parser():
     parser.add_argument('--lam', default=0.95, type=float)
     parser.add_argument('--eps_clip', default=0.2, type=float)
     parser.add_argument('--w_entropy', default=0.001, type=float)
+    
+    parser.add_argument('--seq_len', type=int, default=5, help='LSTM sequence length')
+    parser.add_argument('--lstm_hidden', type=int, default=128, help='LSTM hidden size')
 
     return parser.parse_args()
 
